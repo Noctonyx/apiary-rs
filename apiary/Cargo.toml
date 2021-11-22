@@ -1,0 +1,27 @@
+[package]
+name = "apiary"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] }
+winit = "0.25"
+profiling = "1.0"
+log = "0.4"
+
+[features]
+default = [
+    "profile-with-tracy-memory"
+]
+
+profile-with-optick = [
+    "profiling/profile-with-optick"
+]
+
+profile-with-tracy = ["profiling/profile-with-tracy"]
+profile-with-tracy-memory = [
+    "profiling/profile-with-tracy",
+    "profile-with-tracy"
+]
