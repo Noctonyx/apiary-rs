@@ -3,6 +3,7 @@
 members = [
     "apiary-main",
     "apiary",
+    "apiary-assets"
 ]
 
 [profile.dev.package."*"]

@@ -11,19 +11,16 @@ pub struct ApiaryApp {
 }
 
 impl ApiaryApp {
+
+    #[profiling::function]
     pub fn update(&mut self, _window: &Window) -> ApiaryResult<winit::event_loop::ControlFlow> {
-        profiling::scope!("Main Loop");
+        //profiling::scope!("Main Loop");
         profiling::finish_frame!();
         Ok(ControlFlow::Poll)
     }
 
     pub fn init(window: &dyn HasRawWindowHandle) -> ApiaryResult<Self> {
         profiling::register_thread!("Main Thread");
-        //#[cfg(feature = "profile-with-optick")]
-        //  profiling::optick::register_thread("Main Thread");
-
-        //#[cfg(feature = "profile-with-tracy")]
-        //profiling::tracy_client::set_thread_name("Main Thread");
 
         let api = unsafe { RafxApi::new(window, &Default::default())? };
         {}

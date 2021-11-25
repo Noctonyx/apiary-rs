@@ -1,6 +1,4 @@
 use log::LevelFilter;
-//use rafx_api::{RafxApi, RafxError};
-//use rafx_api::raw_window_handle::HasRawWindowHandle;
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -8,23 +6,9 @@ use winit::{
 };
 use apiary::app::ApiaryApp;
 
-/*
-impl std::error::Error for ApiaryError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match *self {
-            ApiaryError::RafxError(e) => Some(e),
-        }
-    }
-}
-*/
-
-
 fn main() {
-    println!("Hello, world!");
-
     env_logger::Builder::from_default_env()
         .default_format()
-        //.default_format_timestamp_nanos(true)
         .filter_level(LevelFilter::Info)
         .init();
 
@@ -42,12 +26,9 @@ fn main() {
 
         match event {
             Event::MainEventsCleared => {
-                //window.request_redraw();
                 *control_flow = app.update(&window).unwrap();
             }
-//            Event::RedrawRequested(_) => {
-            //              *control_flow = app.update(&window).unwrap();
-            //        }
+
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 window_id,

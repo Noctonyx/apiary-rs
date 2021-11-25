@@ -7,9 +7,14 @@ edition = "2021"
 
 [dependencies]
 rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] }
+rafx-framework = { version = "0.0.14", features = ["rafx-vulkan"] }
+rafx-assets = { version = "0.0.14" }
 winit = "0.25"
 profiling = "1.0"
 log = "0.4"
+rayon = "1.5"
+#apiary-assets  = {path = "../apiary-assets"}
+legion = "0.4"
 
 [features]
 default = [
