@@ -7,5 +7,9 @@ mod tests {
     }
 }
 
-pub mod error;
 pub mod app;
+pub mod error;
+pub mod reader_threads;
+pub mod rendering;
+pub mod scene;
+pub mod time;

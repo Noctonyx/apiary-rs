@@ -6,24 +6,30 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-winit = "0.25"
-profiling = "1.0"
+winit = "0.24"
+#profiling = "1.0"
+#profiling-procmacros = "1.0"
 log = "0.4"
 env_logger = "0.9"
 #rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] }
-apiary = {path = "../apiary"}
+apiary = {path = "../apiary", features=["profile-with-puffin"]}
+structopt = "0.3"
 
 [features]
 default = [
-    "profile-with-tracy-memory"
+#    "profile-with-puffin"
 ]
 
-profile-with-optick = [
-    "profiling/profile-with-optick"
-]
+#profile-with-optick = [
+#    "profiling/profile-with-optick"
+#]
 
-profile-with-tracy = ["profiling/profile-with-tracy"]
-profile-with-tracy-memory = [
-    "profiling/profile-with-tracy",
-    "profile-with-tracy"
-]
+#profile-with-puffin = [
+#    "profiling-procmacros/profile-with-puffin"
+#]
+
+#profile-with-tracy = ["profiling/profile-with-tracy"]
+#profile-with-tracy-memory = [
+#    "profiling/profile-with-tracy",
+#    "profile-with-tracy"
+#]

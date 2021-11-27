@@ -1,12 +1,15 @@
+use apiary::app::{ApiaryApp, ApiaryArgs};
 use log::LevelFilter;
+use structopt::StructOpt;
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
-use apiary::app::ApiaryApp;
 
 fn main() {
+    let args = ApiaryArgs::from_args();
+
     env_logger::Builder::from_default_env()
         .default_format()
         .filter_level(LevelFilter::Info)
@@ -18,7 +21,7 @@ fn main() {
         .build(&event_loop)
         .unwrap();
 
-    let mut app = ApiaryApp::init(&window).unwrap();
+    let mut app = ApiaryApp::init(&args, &window).unwrap();
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
