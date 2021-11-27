@@ -15,6 +15,13 @@ pub struct SceneManager {
 pub trait Scene {
     fn update(&mut self, world: &mut World, resources: &mut Resources);
     fn cleanup(&mut self, _world: &mut World, _resources: &Resources) {}
+    fn process_input(
+        &mut self,
+        _world: &mut World,
+        _resources: &Resources,
+        _event: &winit::event::Event<()>,
+    ) {
+    }
 }
 
 impl SceneManager {
@@ -30,6 +37,17 @@ impl SceneManager {
             .as_mut()
             .unwrap()
             .update(world, resources);
+    }
+
+    pub fn process_input(
+        &mut self,
+        world: &mut World,
+        resources: &Resources,
+        event: &winit::event::Event<()>,
+    ) {
+        if let Some(current_scene) = &mut self.current_scene {
+            current_scene.process_input(world, resources, event);
+        }
     }
 
     pub fn has_next_scene(&self) -> bool {

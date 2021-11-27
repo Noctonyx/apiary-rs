@@ -9,6 +9,7 @@ mod tests {
 
 pub mod app;
 pub mod error;
+mod input;
 pub mod reader_threads;
 pub mod rendering;
 pub mod scene;

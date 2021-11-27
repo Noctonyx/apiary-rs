@@ -1,4 +1,6 @@
 use crate::error::ApiaryResult;
+use crate::input;
+use crate::input::InputResource;
 use crate::rendering::{rendering_destroy, rendering_init};
 use crate::scenes::{create_scene, SceneManager};
 use crate::time::{PeriodicEvent, TimeState};
@@ -557,7 +559,7 @@ impl ApiaryApp {
 
         let mut resources = Resources::default();
         resources.insert(TimeState::new());
-        //resources.insert(InputResource::new());
+        resources.insert(InputResource::new());
         resources.insert(RenderOptions::default_2d());
         resources.insert(MeshRenderOptions::default());
         resources.insert(BasicPipelineRenderOptions::default());
@@ -600,6 +602,98 @@ impl ApiaryApp {
     pub fn shutdown(&mut self) -> ApiaryResult<()> {
         self.api.destroy()?;
         Ok(())
+    }
+
+    pub fn process_input(
+        &mut self,
+        event: &winit::event::Event<()>,
+        window: &winit::window::Window,
+    ) -> bool {
+        Self::do_process_input(
+            &mut self.scene_manager,
+            &mut self.world,
+            &self.resources,
+            event,
+            window,
+        )
+    }
+
+    fn do_process_input(
+        scene_manager: &mut SceneManager,
+        world: &mut World,
+        resources: &Resources,
+        event: &winit::event::Event<()>,
+        _window: &winit::window::Window,
+    ) -> bool {
+        use winit::event::*;
+
+        #[cfg(feature = "egui")]
+        let egui_manager = resources
+            .get::<rafx_plugins::features::egui::WinitEguiManager>()
+            .unwrap();
+
+        #[cfg(feature = "egui")]
+        let ignore_event = {
+            egui_manager.handle_event(event);
+            egui_manager.ignore_event(event)
+        };
+
+        #[cfg(not(feature = "egui"))]
+        let ignore_event = false;
+
+        if !ignore_event {
+            //log::trace!("{:?}", event);
+            let mut was_handled = false;
+            match event {
+                //
+                // Halt if the user requests to close the window
+                //
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => return false,
+
+                //
+                // Close if the escape key is hit
+                //
+                Event::WindowEvent {
+                    event:
+                        WindowEvent::KeyboardInput {
+                            input:
+                                KeyboardInput {
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(virtual_keycode),
+                                    ..
+                                },
+                            ..
+                        },
+                    ..
+                } => {
+                    //log::trace!("Key Down {:?} {:?}", keycode, modifiers);
+                    if *virtual_keycode == VirtualKeyCode::Escape {
+                        return false;
+                    }
+
+                    if *virtual_keycode == VirtualKeyCode::M {
+                        let metrics = resources.get::<AssetManager>().unwrap().metrics();
+                        println!("{:#?}", metrics);
+                        was_handled = true;
+                    }
+                }
+                _ => {}
+            }
+
+            if !was_handled {
+                scene_manager.process_input(world, resources, event);
+
+                {
+                    let mut input_resource = resources.get_mut::<InputResource>().unwrap();
+                    input::handle_winit_event(event, &mut *input_resource);
+                }
+            }
+        }
+
+        true
     }
 }
 

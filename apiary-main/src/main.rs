@@ -2,7 +2,7 @@ use apiary::app::{ApiaryApp, ApiaryArgs};
 use log::LevelFilter;
 use structopt::StructOpt;
 use winit::{
-    event::{Event, WindowEvent},
+    event::Event,
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
@@ -29,17 +29,24 @@ fn main() {
 
         match event {
             Event::MainEventsCleared => {
+                window.request_redraw();
+            }
+            Event::RedrawRequested(_) => {
                 *control_flow = app.update(&window).unwrap();
             }
-
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                window_id,
-            } if window_id == window.id() => {
-                app.shutdown().unwrap();
-                *control_flow = ControlFlow::Exit
-            }
-            _ => (),
+            event @ _ => {
+                if !app.process_input(&event, &window) {
+                    *control_flow = ControlFlow::Exit;
+                }
+            } /*
+              Event::WindowEvent {
+                  event: WindowEvent::CloseRequested,
+                  window_id,
+              } if window_id == window.id() => {
+                  app.shutdown().unwrap();
+                  *control_flow = ControlFlow::Exit
+              }
+               */
         }
     });
 }
