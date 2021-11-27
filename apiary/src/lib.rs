@@ -12,4 +12,5 @@ pub mod error;
 pub mod reader_threads;
 pub mod rendering;
 pub mod scene;
+mod scenes;
 pub mod time;

@@ -43,6 +43,7 @@ pub fn rendering_init(
     #[cfg(feature = "egui")]
     let egui_renderer_plugin =
         Arc::new(rafx_plugins::features::egui::EguiRendererPlugin::default());
+
     mesh_renderer_plugin.legion_init(resources);
     sprite_renderer_plugin.legion_init(resources);
     skybox_renderer_plugin.legion_init(resources);

@@ -11,6 +11,7 @@ rafx-framework = { version = "0.0.14", features = ["rafx-vulkan"] }
 rafx-assets = { version = "0.0.14" }
 rafx-renderer = { version = "0.0.14" }
 rafx-plugins = { version = "0.0.14" , features=["legion"]}
+rafx = "0.0.14"
 winit = "0.24"
 profiling = "1.0"
 profiling-procmacros = "1.0.4"
@@ -22,6 +23,9 @@ structopt = "0.3"
 stats_alloc = { version = "0.1.8", optional = true }
 bevy_tasks = "0.5"
 egui = { version = "0.12", features = ["default_fonts"], optional = true }
+glam = { version = "0.13.1", features = [ "serde" ] }
+puffin_egui = { version = "0.3.0", optional = true }
+rand = "0.8"
 
 [features]
 default = [
@@ -41,7 +45,9 @@ profile-with-tracy-memory = [
     "profile-with-tracy"
 ]
 profile-with-puffin = [
-    "profiling/profile-with-puffin"
+    "profiling/profile-with-puffin",
+    "puffin_egui",
+    "egui"
 ]
 
 egui-winit = []

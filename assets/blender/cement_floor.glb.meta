@@ -1,0 +1,24 @@
+(
+    version: 2,
+    importer_options: (),
+    importer_state: (
+        buffer_asset_uuids: [
+            (Index(0), "ff4306c9-4842-4ad1-bd95-743440f36d3c"),
+            (Index(1), "5bda5810-2a45-4d1a-9f3e-c8b9c37e435c"),
+        ],
+        image_asset_uuids: [
+            (Name("patchy_cement1_Base_Color"), "15878e86-5fe1-4f06-826f-fd9de19afc3a"),
+            (Name("patchy_cement1_Metallic-patchy_cement1_Roughness"), "75c98a82-80d4-49e9-bd47-f41f92675791"),
+            (Name("patchy_cement1_Normal"), "e29be0c5-cf1c-4f02-9137-491bf061a144"),
+        ],
+        material_asset_uuids: [
+            (Name("Cement"), "0bcf4ab9-ac89-482c-8310-3d1d3d1f276c"),
+        ],
+        material_instance_asset_uuids: [
+            (Name("Cement"), "14d466e2-6e8f-493e-a0dc-480cc5d7a47e"),
+        ],
+        mesh_asset_uuids: [
+            (Name("Cube"), "ca8f69cc-4ca5-4ea0-a8e0-4d52e50d6a86"),
+        ],
+    ),
+)

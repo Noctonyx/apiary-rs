@@ -1,15 +1,23 @@
 use crate::error::ApiaryResult;
-use crate::rendering::rendering_init;
-use crate::scene::SceneManager;
-use crate::time::TimeState;
+use crate::rendering::{rendering_destroy, rendering_init};
+use crate::scenes::{create_scene, SceneManager};
+use crate::time::{PeriodicEvent, TimeState};
 use legion::{Resources, World};
-use rafx_api::{RafxApi, RafxExtents2D};
+use rafx::visibility::VisibilityRegion;
+use rafx_api::{RafxApi, RafxExtents2D, RafxSwapchainHelper};
+use rafx_assets::distill::loader::handle::Handle;
 use rafx_assets::distill_impl::AssetResource;
 use rafx_assets::AssetManager;
+use rafx_framework::render_features::ExtractResources;
 use rafx_plugins::assets::font::FontAsset;
-use rafx_plugins::features::egui::WinitEguiManager;
+use rafx_plugins::features::egui::{EguiContextResource, WinitEguiManager};
+use rafx_plugins::features::mesh::MeshRenderOptions;
+use rafx_plugins::features::skybox::SkyboxResource;
+use rafx_plugins::features::text::TextResource;
+use rafx_plugins::features::tile_layer::TileLayerResource;
+use rafx_plugins::pipelines::basic::{BasicPipelineRenderOptions, TonemapperType};
 use rafx_renderer::daemon::AssetDaemonOpt;
-use rafx_renderer::{AssetSource, ViewportsResource};
+use rafx_renderer::{AssetSource, Renderer, RendererConfigResource, ViewportsResource};
 use std::net::{AddrParseError, SocketAddr};
 use std::path::PathBuf;
 use std::time::Instant;
@@ -22,6 +30,9 @@ pub struct ApiaryApp {
     resources: Resources,
     world: World,
     scene_manager: SceneManager,
+
+    print_time_event: PeriodicEvent,
+    font: Handle<FontAsset>,
 }
 
 #[derive(StructOpt)]
@@ -84,6 +95,143 @@ fn parse_socket_addr(s: &str) -> std::result::Result<SocketAddr, AddrParseError>
     s.parse()
 }
 
+#[derive(Clone)]
+pub struct RenderOptions {
+    pub enable_msaa: bool,
+    pub enable_hdr: bool,
+    pub enable_bloom: bool,
+    pub enable_textures: bool,
+    pub enable_lighting: bool,
+    pub show_surfaces: bool,
+    pub show_wireframes: bool,
+    pub show_debug3d: bool,
+    pub show_text: bool,
+    pub show_skybox: bool,
+    pub show_feature_toggles: bool,
+    pub show_shadows: bool,
+    pub blur_pass_count: usize,
+    pub tonemapper_type: TonemapperType,
+    pub enable_visibility_update: bool,
+}
+
+impl RenderOptions {
+    fn default_2d() -> Self {
+        RenderOptions {
+            enable_msaa: false,
+            enable_hdr: false,
+            enable_bloom: false,
+            enable_textures: true,
+            enable_lighting: true,
+            show_surfaces: true,
+            show_wireframes: false,
+            show_debug3d: true,
+            show_text: true,
+            show_skybox: true,
+            show_shadows: true,
+            show_feature_toggles: false,
+            blur_pass_count: 0,
+            tonemapper_type: TonemapperType::None,
+            enable_visibility_update: true,
+        }
+    }
+
+    pub fn default_3d() -> Self {
+        RenderOptions {
+            enable_msaa: true,
+            enable_hdr: true,
+            enable_bloom: true,
+            enable_textures: true,
+            enable_lighting: true,
+            show_surfaces: true,
+            show_wireframes: false,
+            show_debug3d: true,
+            show_text: true,
+            show_skybox: true,
+            show_shadows: true,
+            show_feature_toggles: true,
+            blur_pass_count: 5,
+            tonemapper_type: TonemapperType::LogDerivative,
+            enable_visibility_update: true,
+        }
+    }
+}
+
+impl RenderOptions {
+    #[cfg(feature = "egui")]
+    pub fn ui(&mut self, ui: &mut egui::Ui) {
+        ui.checkbox(&mut self.enable_msaa, "enable_msaa");
+        ui.checkbox(&mut self.enable_hdr, "enable_hdr");
+
+        if self.enable_hdr {
+            ui.indent("HDR options", |ui| {
+                let tonemapper_names: Vec<_> = (0..(TonemapperType::MAX as i32))
+                    .map(|t| TonemapperType::from(t).display_name())
+                    .collect();
+
+                egui::ComboBox::from_label("tonemapper_type")
+                    .selected_text(tonemapper_names[self.tonemapper_type as usize])
+                    .show_ui(ui, |ui| {
+                        for (i, name) in tonemapper_names.iter().enumerate() {
+                            ui.selectable_value(
+                                &mut self.tonemapper_type,
+                                TonemapperType::from(i as i32),
+                                name,
+                            );
+                        }
+                    });
+
+                ui.checkbox(&mut self.enable_bloom, "enable_bloom");
+                if self.enable_bloom {
+                    ui.indent("", |ui| {
+                        ui.add(
+                            egui::Slider::new(&mut self.blur_pass_count, 0..=10)
+                                .clamp_to_range(true)
+                                .text("blur_pass_count"),
+                        );
+                    });
+                }
+            });
+        }
+
+        if self.show_feature_toggles {
+            ui.checkbox(&mut self.show_wireframes, "show_wireframes");
+            ui.checkbox(&mut self.show_surfaces, "show_surfaces");
+
+            if self.show_surfaces {
+                ui.indent("", |ui| {
+                    ui.checkbox(&mut self.enable_textures, "enable_textures");
+                    ui.checkbox(&mut self.enable_lighting, "enable_lighting");
+
+                    if self.enable_lighting {
+                        ui.indent("", |ui| {
+                            ui.checkbox(&mut self.show_shadows, "show_shadows");
+                        });
+                    }
+
+                    ui.checkbox(&mut self.show_skybox, "show_skybox_feature");
+                });
+            }
+
+            ui.checkbox(&mut self.show_debug3d, "show_debug3d_feature");
+            ui.checkbox(&mut self.show_text, "show_text_feature");
+        }
+
+        ui.checkbox(
+            &mut self.enable_visibility_update,
+            "enable_visibility_update",
+        );
+    }
+}
+
+#[derive(Default)]
+pub struct DebugUiState {
+    show_render_options: bool,
+    show_asset_list: bool,
+
+    #[cfg(feature = "profile-with-puffin")]
+    show_profiler: bool,
+}
+
 impl ApiaryApp {
     //#[profiling::function]
     pub fn update(
@@ -101,13 +249,48 @@ impl ApiaryApp {
             self.resources.get_mut::<TimeState>().unwrap().update();
         }
 
+        //
+        // Print FPS
+        //
         {
-            let mut viewports_resource = self.resources.get_mut::<ViewportsResource>().unwrap();
+            let time_state = self.resources.get::<TimeState>().unwrap();
+            if self.print_time_event.try_take_event(
+                time_state.current_instant(),
+                std::time::Duration::from_secs_f32(1.0),
+            ) {
+                log::info!("FPS: {}", time_state.updates_per_second());
+                //renderer.dump_stats();
+            }
+        }
+
+        {
+            let mut viewports = self.resources.get_mut::<ViewportsResource>().unwrap();
             let physical_size = window.inner_size();
-            viewports_resource.main_window_size = RafxExtents2D {
+            viewports.main_window_size = RafxExtents2D {
                 width: physical_size.width,
                 height: physical_size.height,
             };
+        }
+
+        {
+            if self.scene_manager.has_next_scene() {
+                self.scene_manager
+                    .try_cleanup_current_scene(&mut self.world, &self.resources);
+
+                {
+                    // NOTE(dvd): Legion leaks memory because the entity IDs aren't reset when the
+                    // world is cleared and the entity location map will grow without bounds.
+                    self.world = World::default();
+
+                    // NOTE(dvd): The Renderer maintains some per-frame temporary data to avoid
+                    // allocating each frame. We can clear this between scene transitions.
+                    let mut renderer = self.resources.get_mut::<Renderer>().unwrap();
+                    renderer.clear_temporary_work();
+                }
+
+                //self.scene_manager.go_next_scene();
+                //.try_create_next_scene(&mut self.world, &self.resources);
+            }
         }
 
         //
@@ -139,8 +322,144 @@ impl ApiaryApp {
         }
 
         {
+            let mut text_resource = self.resources.get_mut::<TextResource>().unwrap();
+
+            text_resource.add_text(
+                "Use Left/Right arrow keys to switch demos".to_string(),
+                glam::Vec3::new(100.0, 400.0, 0.0),
+                &self.font,
+                20.0,
+                glam::Vec4::new(1.0, 1.0, 1.0, 1.0),
+            );
+        }
+
+        {
             self.scene_manager
                 .update_scene(&mut self.world, &mut self.resources);
+        }
+
+        #[cfg(feature = "egui")]
+        {
+            let ctx = self
+                .resources
+                .get::<EguiContextResource>()
+                .unwrap()
+                .context();
+            let time_state = self.resources.get::<TimeState>().unwrap();
+            let mut debug_ui_state = self.resources.get_mut::<DebugUiState>().unwrap();
+            let mut render_options = self.resources.get_mut::<RenderOptions>().unwrap();
+            let asset_manager = self.resources.get::<AssetResource>().unwrap();
+
+            egui::TopPanel::top("top_panel").show(&ctx, |ui| {
+                egui::menu::bar(ui, |ui| {
+                    egui::menu::menu(ui, "Windows", |ui| {
+                        ui.checkbox(&mut debug_ui_state.show_render_options, "Render Options");
+
+                        ui.checkbox(&mut debug_ui_state.show_asset_list, "Asset List");
+
+                        #[cfg(feature = "profile-with-puffin")]
+                        if ui
+                            .checkbox(&mut debug_ui_state.show_profiler, "Profiler")
+                            .changed()
+                        {
+                            log::info!(
+                                "Setting puffin profiler enabled: {:?}",
+                                debug_ui_state.show_profiler
+                            );
+                            profiling::puffin::set_scopes_on(debug_ui_state.show_profiler);
+                        }
+                    });
+
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        ui.label(format!("Frame: {}", time_state.update_count()));
+                        ui.separator();
+                        ui.label(format!(
+                            "FPS: {:.1}",
+                            time_state.updates_per_second_smoothed()
+                        ));
+                    });
+                })
+            });
+
+            if debug_ui_state.show_render_options {
+                egui::Window::new("Render Options")
+                    .open(&mut debug_ui_state.show_render_options)
+                    .show(&ctx, |ui| {
+                        render_options.ui(ui);
+                    });
+            }
+
+            if debug_ui_state.show_asset_list {
+                egui::Window::new("Asset List")
+                    .open(&mut debug_ui_state.show_asset_list)
+                    .show(&ctx, |ui| {
+                        egui::ScrollArea::auto_sized().show(ui, |ui| {
+                            let loader = asset_manager.loader();
+                            let mut asset_info = loader
+                                .get_active_loads()
+                                .into_iter()
+                                .map(|item| loader.get_load_info(item))
+                                .collect::<Vec<_>>();
+                            asset_info.sort_by(|x, y| {
+                                x.as_ref()
+                                    .map(|x| &x.path)
+                                    .cmp(&y.as_ref().map(|y| &y.path))
+                            });
+                            for info in asset_info {
+                                if let Some(info) = info {
+                                    let id = info.asset_id;
+                                    ui.label(format!(
+                                        "{}:{} .. {}",
+                                        info.file_name.unwrap_or_else(|| "???".to_string()),
+                                        info.asset_name.unwrap_or_else(|| format!("{}", id)),
+                                        info.refs
+                                    ));
+                                } else {
+                                    ui.label("NO INFO");
+                                }
+                            }
+                        });
+                    });
+            }
+
+            #[cfg(feature = "profile-with-puffin")]
+            if debug_ui_state.show_profiler {
+                profiling::scope!("puffin profiler");
+                puffin_egui::profiler_window(&ctx);
+            }
+
+            let mut render_config_resource =
+                self.resources.get_mut::<RendererConfigResource>().unwrap();
+            render_config_resource
+                .visibility_config
+                .enable_visibility_update = render_options.enable_visibility_update;
+        }
+
+        {
+            let render_options = self.resources.get::<RenderOptions>().unwrap();
+
+            let mut bpro = self
+                .resources
+                .get_mut::<BasicPipelineRenderOptions>()
+                .unwrap();
+            bpro.enable_msaa = render_options.enable_msaa;
+            bpro.enable_hdr = render_options.enable_hdr;
+            bpro.enable_bloom = render_options.enable_bloom;
+            bpro.enable_textures = render_options.enable_textures;
+            bpro.show_surfaces = render_options.show_surfaces;
+            bpro.show_wireframes = render_options.show_wireframes;
+            bpro.show_debug3d = render_options.show_debug3d;
+            bpro.show_text = render_options.show_text;
+            bpro.show_skybox = render_options.show_skybox;
+            bpro.show_feature_toggles = render_options.show_feature_toggles;
+            bpro.blur_pass_count = render_options.blur_pass_count;
+            bpro.tonemapper_type = render_options.tonemapper_type;
+            bpro.enable_visibility_update = render_options.enable_visibility_update;
+
+            let mut mesh_render_options = self.resources.get_mut::<MeshRenderOptions>().unwrap();
+            mesh_render_options.show_surfaces = render_options.show_surfaces;
+            mesh_render_options.show_shadows = render_options.show_shadows;
+            mesh_render_options.enable_lighting = render_options.enable_lighting;
         }
 
         //
@@ -158,6 +477,75 @@ impl ApiaryApp {
             (t1 - t0).as_secs_f32() * 1000.0
         );
 
+        //
+        // Redraw
+        //
+        {
+            profiling::scope!("Start Next Frame Render");
+            let renderer = self.resources.get::<Renderer>().unwrap();
+
+            let mut extract_resources = ExtractResources::default();
+
+            macro_rules! add_to_extract_resources {
+                ($ty: ident) => {
+                    #[allow(non_snake_case)]
+                    let mut $ty = self.resources.get_mut::<$ty>().unwrap();
+                    extract_resources.insert(&mut *$ty);
+                };
+                ($ty: path, $name: ident) => {
+                    let mut $name = self.resources.get_mut::<$ty>().unwrap();
+                    extract_resources.insert(&mut *$name);
+                };
+            }
+
+            add_to_extract_resources!(VisibilityRegion);
+            add_to_extract_resources!(RafxSwapchainHelper);
+            add_to_extract_resources!(ViewportsResource);
+            add_to_extract_resources!(AssetManager);
+            add_to_extract_resources!(TimeState);
+            add_to_extract_resources!(RenderOptions);
+            add_to_extract_resources!(BasicPipelineRenderOptions);
+            add_to_extract_resources!(MeshRenderOptions);
+            add_to_extract_resources!(RendererConfigResource);
+            add_to_extract_resources!(TileLayerResource);
+            add_to_extract_resources!(SkyboxResource);
+            add_to_extract_resources!(
+                rafx_plugins::features::sprite::SpriteRenderObjectSet,
+                sprite_render_object_set
+            );
+            add_to_extract_resources!(
+                rafx_plugins::features::mesh::MeshRenderObjectSet,
+                mesh_render_object_set
+            );
+            add_to_extract_resources!(
+                rafx_plugins::features::tile_layer::TileLayerRenderObjectSet,
+                tile_layer_render_object_set
+            );
+            add_to_extract_resources!(
+                rafx_plugins::features::debug3d::Debug3DResource,
+                debug_draw_3d_resource
+            );
+            add_to_extract_resources!(rafx_plugins::features::text::TextResource, text_resource);
+
+            #[cfg(feature = "egui")]
+            add_to_extract_resources!(
+                rafx_plugins::features::egui::WinitEguiManager,
+                winit_egui_manager
+            );
+
+            extract_resources.insert(&mut self.world);
+
+            renderer
+                .start_rendering_next_frame(&mut extract_resources)
+                .unwrap();
+        }
+
+        let t2 = rafx::base::Instant::now();
+        log::trace!(
+            "[main] start rendering took {} ms",
+            (t2 - t1).as_secs_f32() * 1000.0
+        );
+
         profiling::finish_frame!();
         Ok(ControlFlow::Poll)
     }
@@ -169,8 +557,13 @@ impl ApiaryApp {
 
         let mut resources = Resources::default();
         resources.insert(TimeState::new());
+        //resources.insert(InputResource::new());
+        resources.insert(RenderOptions::default_2d());
+        resources.insert(MeshRenderOptions::default());
+        resources.insert(BasicPipelineRenderOptions::default());
+        resources.insert(DebugUiState::default());
 
-        let scene_manager = SceneManager::default();
+        let mut scene_manager = SceneManager::default();
 
         let asset_source = args.asset_source().unwrap();
 
@@ -188,7 +581,10 @@ impl ApiaryApp {
             asset_resource.load_asset_path::<FontAsset, _>("fonts/mplus-1p-regular.ttf")
         };
 
-        let world = World::default();
+        let mut world = World::default();
+        scene_manager.set_scene(create_scene(&mut world, &resources));
+
+        let print_time_event = crate::time::PeriodicEvent::default();
 
         {}
         Ok(ApiaryApp {
@@ -196,11 +592,19 @@ impl ApiaryApp {
             resources,
             world,
             scene_manager,
+            print_time_event,
+            font,
         })
     }
 
     pub fn shutdown(&mut self) -> ApiaryResult<()> {
         self.api.destroy()?;
         Ok(())
+    }
+}
+
+impl Drop for ApiaryApp {
+    fn drop(&mut self) {
+        rendering_destroy(&mut self.resources).unwrap()
     }
 }

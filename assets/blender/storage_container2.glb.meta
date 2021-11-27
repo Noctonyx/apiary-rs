@@ -1,0 +1,24 @@
+(
+    version: 2,
+    importer_options: (),
+    importer_state: (
+        buffer_asset_uuids: [
+            (Index(0), "873ee9cd-9c1c-4ce1-9f41-806adae6a4c6"),
+            (Index(1), "09d6e7ed-d9f5-4c62-ba50-ee1f415341e7"),
+        ],
+        image_asset_uuids: [
+            (Name("storage-container2-albedo"), "1b711326-fe38-438f-b75e-dca2e31498f0"),
+            (Name("storage-container2-metallic-storage-container2-roughness"), "23bfbbfe-5f97-47a5-9776-4ff5cd3c35ee"),
+            (Name("storage-container2-normal-ogl"), "2df08b1d-7043-4dc8-8a2d-6a1df665ec67"),
+        ],
+        material_asset_uuids: [
+            (Name("Material"), "041336bd-ad9e-45db-8d58-6c7ce2cb2520"),
+        ],
+        material_instance_asset_uuids: [
+            (Name("Material"), "99381d91-b4eb-42cf-98d5-f39c9d2ba48c"),
+        ],
+        mesh_asset_uuids: [
+            (Name("Cube"), "04ea64c6-d4da-4ace-83e7-56f4d60524c1"),
+        ],
+    ),
+)
