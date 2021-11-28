@@ -5,6 +5,7 @@ use crate::rendering::{rendering_destroy, rendering_init};
 use crate::scenes::{create_scene, SceneManager};
 use crate::time::{PeriodicEvent, TimeState};
 use legion::{Resources, World};
+//use puffin_egui::puffin;
 use rafx::visibility::VisibilityRegion;
 use rafx_api::{RafxApi, RafxExtents2D, RafxSwapchainHelper};
 use rafx_assets::distill::loader::handle::Handle;
@@ -140,7 +141,7 @@ impl RenderOptions {
     pub fn default_3d() -> Self {
         RenderOptions {
             enable_msaa: true,
-            enable_hdr: true,
+            enable_hdr: false,
             enable_bloom: true,
             enable_textures: true,
             enable_lighting: true,
@@ -241,6 +242,8 @@ impl ApiaryApp {
         window: &winit::window::Window,
     ) -> ApiaryResult<winit::event_loop::ControlFlow> {
         profiling::scope!("Main Loop");
+        //profiling::
+        //puffin::GlobalProfiler::lock().new_frame();
 
         let t0 = Instant::now();
 
@@ -352,7 +355,7 @@ impl ApiaryApp {
             let mut render_options = self.resources.get_mut::<RenderOptions>().unwrap();
             let asset_manager = self.resources.get::<AssetResource>().unwrap();
 
-            egui::TopPanel::top("top_panel").show(&ctx, |ui| {
+            egui::TopBottomPanel::top("top_panel").show(&ctx, |ui| {
                 egui::menu::bar(ui, |ui| {
                     egui::menu::menu(ui, "Windows", |ui| {
                         ui.checkbox(&mut debug_ui_state.show_render_options, "Render Options");

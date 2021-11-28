@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] }
-rafx-framework = { version = "0.0.14", features = ["rafx-vulkan"] }
-rafx-assets = { version = "0.0.14" }
-rafx-renderer = { version = "0.0.14" }
-rafx-plugins = { version = "0.0.14" , features=["legion"]}
-rafx = "0.0.14"
+rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] , path="../../rafx/rafx-api"}
+rafx-framework = { version = "0.0.14", features = ["rafx-vulkan"] ,path="../../rafx/rafx-framework"}
+rafx-assets = { version = "0.0.14", path="../../rafx/rafx-assets"}
+rafx-renderer = { version = "0.0.14" , path="../../rafx/rafx-renderer"}
+rafx-plugins = { version = "0.0.14" , features=["legion"], path="../../rafx/rafx-plugins"}
+rafx = { version = "0.0.14" , path="../../rafx/rafx"}
 winit = "0.24"
 profiling = "1.0"
 profiling-procmacros = "1.0.4"
@@ -22,14 +22,14 @@ legion = "0.4"
 structopt = "0.3"
 stats_alloc = { version = "0.1.8", optional = true }
 bevy_tasks = "0.5"
-egui = { version = "0.12", features = ["default_fonts"], optional = true }
+egui = { version = "0.15", features = ["default_fonts"], optional = true }
 glam = { version = "0.13.1", features = [ "serde" ] }
-puffin_egui = { version = "0.3.0", optional = true }
+puffin_egui = { version = "0.10", optional = true }
 rand = "0.8"
 
 [features]
 default = [
-    "profile-with-puffin",
+
     "use-egui"
 ]
 
@@ -51,3 +51,6 @@ profile-with-puffin = [
 ]
 
 egui-winit = []
+
+[patch.crates-io]
+#egui = { version = "0.15", features = ["default_fonts"], optional = true }

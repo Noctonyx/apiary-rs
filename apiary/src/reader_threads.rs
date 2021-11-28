@@ -24,8 +24,10 @@ impl ApiaryRendererThreadPool {
         // when the `cost` exceeds some threshold.
         let mut feature_parallelism = HashMap::new();
 
+        let thr_name = String::from("Worker");
+
         Self {
-            task_pool: TaskPoolBuilder::new().build(),
+            task_pool: TaskPoolBuilder::new().thread_name(thr_name).build(),
             feature_parallelism: Arc::new(feature_parallelism),
         }
     }

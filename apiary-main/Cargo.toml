@@ -12,7 +12,7 @@ winit = "0.24"
 log = "0.4"
 env_logger = "0.9"
 #rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] }
-apiary = {path = "../apiary", features=["profile-with-puffin"]}
+apiary = {path = "../apiary", features=["profile-with-tracy"]}
 structopt = "0.3"
 
 [features]
