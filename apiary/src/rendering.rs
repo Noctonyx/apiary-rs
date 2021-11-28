@@ -1,11 +1,15 @@
 use crate::reader_threads::ApiaryRendererThreadPool;
 use legion::Resources;
-use rafx_api::raw_window_handle::HasRawWindowHandle;
-use rafx_api::{RafxApi, RafxDeviceContext, RafxResult, RafxSwapchainHelper};
-use rafx_assets::distill_impl::AssetResource;
-use rafx_assets::AssetManager;
-use rafx_framework::render_features::{ExtractResources, RenderRegistry};
-use rafx_framework::visibility::VisibilityRegion;
+use rafx::api::raw_window_handle::HasRawWindowHandle;
+use rafx::api::{RafxApi, RafxDeviceContext, RafxResult, RafxSwapchainHelper};
+use rafx::assets::distill_impl::AssetResource;
+use rafx::assets::AssetManager;
+use rafx::render_features::{ExtractResources, RenderRegistry};
+use rafx::renderer::{
+    AssetSource, Renderer, RendererBuilder, RendererConfigResource, SwapchainHandler,
+    ViewportsResource,
+};
+use rafx::visibility::VisibilityRegion;
 use rafx_plugins::assets::anim::AnimAssetTypeRendererPlugin;
 use rafx_plugins::assets::font::FontAssetTypeRendererPlugin;
 use rafx_plugins::assets::ldtk::LdtkAssetTypeRendererPlugin;
@@ -17,10 +21,6 @@ use rafx_plugins::features::sprite::SpriteRendererPlugin;
 use rafx_plugins::features::text::TextRendererPlugin;
 use rafx_plugins::features::tile_layer::TileLayerRendererPlugin;
 use rafx_plugins::pipelines::basic::{BasicPipelineRendererPlugin, BasicRenderGraphGenerator};
-use rafx_renderer::{
-    AssetSource, Renderer, RendererBuilder, RendererConfigResource, SwapchainHandler,
-    ViewportsResource,
-};
 use std::sync::Arc;
 
 pub fn rendering_init(
@@ -98,8 +98,8 @@ pub fn rendering_init(
             asset_source,
             render_graph_generator,
             || {
-                None
-                //Some(Box::new(ApiaryRendererThreadPool::new()))
+                //None
+                Some(Box::new(ApiaryRendererThreadPool::new()))
             },
         )
     }?;

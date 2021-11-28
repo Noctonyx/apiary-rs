@@ -12,6 +12,5 @@ pub mod error;
 mod input;
 pub mod reader_threads;
 pub mod rendering;
-pub mod scene;
 mod scenes;
 pub mod time;

@@ -1,12 +1,12 @@
 use bevy_tasks::prelude::*;
 use bevy_tasks::{TaskPool, TaskPoolBuilder};
-use rafx_assets::distill::loader::crossbeam_channel::{bounded, unbounded};
-use rafx_framework::render_features::{
+use rafx::assets::distill::loader::crossbeam_channel::{bounded, unbounded};
+use rafx::framework::render_features::{
     RenderFeatureExtractJob, RenderFeatureIndex, RenderFeaturePrepareJob, RenderFeatureViewPacket,
     RenderJobExtractContext, RenderRegistry, RenderViewSubmitNodeCount, RenderViewVisibilityQuery,
     SubmitNodeBlocks, ViewFrameIndex, ViewVisibilityJob,
 };
-use rafx_renderer::{RenderFeaturePlugin, RenderFrameJob, Renderer, RendererThreadPool};
+use rafx::renderer::{RenderFeaturePlugin, RenderFrameJob, Renderer, RendererThreadPool};
 use std::collections::HashMap;
 use std::sync::Arc;
 

@@ -12,7 +12,9 @@ fn main() {
 
     env_logger::Builder::from_default_env()
         .default_format()
-        .filter_level(LevelFilter::Info)
+        .filter_level(LevelFilter::Debug)
+        .filter_module("rafx_framework::graph::graph_plan", log::LevelFilter::Info)
+        .filter_module("rafx_assets::assets::asset_manager", log::LevelFilter::Info)
         .init();
 
     let event_loop = EventLoop::new();

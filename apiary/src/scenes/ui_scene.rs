@@ -3,15 +3,16 @@ use crate::scenes::Scene;
 use crate::time::TimeState;
 use glam::Vec3;
 use legion::{IntoQuery, Read, Resources, World, Write};
+use rafx::assets::distill_impl::AssetResource;
+use rafx::assets::{AssetManager, ImageAsset};
 use rafx::distill::loader::handle::Handle;
-use rafx::rafx_visibility::{DepthRange, PerspectiveParameters, Projection};
-use rafx_assets::distill_impl::AssetResource;
-use rafx_assets::{AssetManager, ImageAsset};
-use rafx_framework::render_features::{
+use rafx::framework::render_features::{
     RenderFeatureFlagMaskBuilder, RenderFeatureMaskBuilder, RenderPhaseMaskBuilder,
     RenderViewDepthRange,
 };
-use rafx_framework::visibility::{CullModel, ObjectId, ViewFrustumArc, VisibilityRegion};
+use rafx::framework::visibility::{CullModel, ObjectId, ViewFrustumArc, VisibilityRegion};
+use rafx::rafx_visibility::{DepthRange, PerspectiveParameters, Projection};
+use rafx::renderer::{RenderViewMeta, ViewportsResource};
 use rafx_plugins::assets::mesh::MeshAsset;
 use rafx_plugins::components::{
     DirectionalLightComponent, MeshComponent, PointLightComponent, SpotLightComponent,
@@ -30,7 +31,6 @@ use rafx_plugins::phases::{
     DepthPrepassRenderPhase, OpaqueRenderPhase, TransparentRenderPhase, UiRenderPhase,
     WireframeRenderPhase,
 };
-use rafx_renderer::{RenderViewMeta, ViewportsResource};
 use rand::{thread_rng, Rng};
 
 pub struct UiScene {

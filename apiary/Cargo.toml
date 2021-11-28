@@ -6,17 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] , path="../../rafx/rafx-api"}
-rafx-framework = { version = "0.0.14", features = ["rafx-vulkan"] ,path="../../rafx/rafx-framework"}
-rafx-assets = { version = "0.0.14", path="../../rafx/rafx-assets"}
-rafx-renderer = { version = "0.0.14" , path="../../rafx/rafx-renderer"}
-rafx-plugins = { version = "0.0.14" , features=["legion"], path="../../rafx/rafx-plugins"}
-rafx = { version = "0.0.14" , path="../../rafx/rafx"}
+#rafx-api = { version = "0.0.14", features = ["rafx-vulkan"] , path="../../rafx/rafx-api"}
+#rafx-framework = { version = "0.0.14", features = ["rafx-vulkan"] ,path="../../rafx/rafx-framework"}
+#rafx-assets = { version = "0.0.14", path="../../rafx/rafx-assets"}
+#rafx-renderer = { version = "0.0.14" , path="../../rafx/rafx-renderer"}
+rafx-plugins = { version = "0.0.14" , features=["legion", "egui"], path="../../rafx/rafx-plugins"}
+#distill = { version = "=0.0.3", features = ["serde_importers"] }
+rafx = { version = "0.0.14" , path="../../rafx/rafx", features=["renderer", "basis-universal", "assets"]}
+#rafx = { version = "0.0.14" , features=["renderer", "basis-universal", "assets"]}
 winit = "0.24"
 profiling = "1.0"
 profiling-procmacros = "1.0.4"
 log = "0.4"
-rayon = "1.5"
+#rayon = "1.5"
 #apiary-assets  = {path = "../apiary-assets"}
 legion = "0.4"
 structopt = "0.3"
@@ -26,14 +28,20 @@ egui = { version = "0.15", features = ["default_fonts"], optional = true }
 glam = { version = "0.13.1", features = [ "serde" ] }
 puffin_egui = { version = "0.10", optional = true }
 rand = "0.8"
+#image = "0.23.12"
+#serde = "1"
+##serde_bytes = "0.11"
+#bincode = "1.3.1"
 
 [features]
 default = [
-
+    "rafx-vulkan",
     "use-egui"
 ]
 
 use-egui = ["egui", "egui-winit", "rafx-plugins/egui-winit"]
+
+rafx-vulkan = ["rafx/rafx-vulkan"]
 
 profile-with-optick = [
     "profiling/profile-with-optick"
@@ -51,6 +59,3 @@ profile-with-puffin = [
 ]
 
 egui-winit = []
-
-[patch.crates-io]
-#egui = { version = "0.15", features = ["default_fonts"], optional = true }
