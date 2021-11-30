@@ -92,6 +92,7 @@ name = "apiary"
 version = "0.1.0"
 dependencies = [
  "bevy_tasks",
+ "distill",
  "egui",
  "glam",
  "legion",
@@ -177,6 +178,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-fs"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b3ca4f8ff117c37c278a2f7415ce9be55560b846b5bc4412aaa5d29c1c3dae2"
+dependencies = [
+ "async-lock",
+ "blocking",
+ "futures-lite",
+]
+
+[[package]]
+name = "async-io"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a811e6a479f2439f0c04038796b5cfb3d2ad56c230e0f2d3f7b04d68cfee607b"
+dependencies = [
+ "concurrent-queue",
+ "futures-lite",
+ "libc",
+ "log",
+ "once_cell",
+ "parking",
+ "polling",
+ "slab",
+ "socket2",
+ "waker-fn",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "async-lock"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -186,10 +217,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-net"
+version = "1.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5373304df79b9b4395068fb080369ec7178608827306ce4d081cba51cac551df"
+dependencies = [
+ "async-io",
+ "blocking",
+ "futures-lite",
+]
+
+[[package]]
 name = "async-task"
 version = "4.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e91831deabf0d6d7ec49552e489aed63b7456a7a3c46cff62adad428110b0af0"
+
+[[package]]
+name = "atomic-waker"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "065374052e7df7ee4047b1160cca5e1467a12351a40b3da123c870ba0b8eda2a"
 
 [[package]]
 name = "atomic_refcell"
@@ -313,6 +361,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
+name = "blocking"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "046e47d4b2d391b1f6f8b407b1deb8dee56c1852ccd868becf2710f601b5f427"
+dependencies = [
+ "async-channel",
+ "async-task",
+ "atomic-waker",
+ "fastrand",
+ "futures-lite",
+ "once_cell",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -329,12 +391,6 @@ name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
-
-[[package]]
-name = "bytes"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4872d67bab6358e59559027aa3b9157c53d9358c51423c17554809a8858e0f8"
 
 [[package]]
 name = "cache-padded"
@@ -711,8 +767,7 @@ checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 [[package]]
 name = "distill"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96d8c3947e7f206175d701406175a9c1a5c41e9328d193b55f56f94c38c1c297"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
  "distill-core",
  "distill-daemon",
@@ -723,11 +778,12 @@ dependencies = [
 [[package]]
 name = "distill-core"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e43228e253f94434afd87f0686c0253cce330084f9803c59af60d2c103d06dee"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
  "dunce",
+ "futures",
  "futures-core",
+ "getrandom",
  "path-clean",
  "path-slash",
  "serde",
@@ -738,11 +794,15 @@ dependencies = [
 [[package]]
 name = "distill-daemon"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2428bac223dcffbf132122c0ee476b91a1e5b5872b06cec94933f1ed49a5abcd"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
  "async-channel",
+ "async-executor",
+ "async-fs",
+ "async-io",
  "async-lock",
+ "async-net",
+ "bevy_tasks",
  "bincode",
  "capnp",
  "capnp-rpc",
@@ -764,8 +824,6 @@ dependencies = [
  "ron",
  "serde",
  "serde_derive",
- "tokio",
- "tokio-util",
  "uuid",
 ]
 
@@ -794,8 +852,7 @@ dependencies = [
 [[package]]
 name = "distill-importer"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1eac2abba99a67f0715d74e4047439cdd42a7a5e35c05a110a423cce951cb614"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
  "distill-core",
  "distill-serde-importable-derive",
@@ -811,9 +868,11 @@ dependencies = [
 [[package]]
 name = "distill-loader"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec09a9436af46449e13fffd723f677629186ef13050e84c3924b4ea78235512f"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
+ "async-executor",
+ "async-net",
+ "bevy_tasks",
  "capnp",
  "capnp-rpc",
  "crossbeam-channel",
@@ -823,20 +882,20 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
+ "instant",
  "log",
  "memmap",
+ "pin-project-lite",
  "serde",
  "thread_local",
- "tokio",
- "tokio-util",
  "uuid",
+ "websocket-async-io",
 ]
 
 [[package]]
 name = "distill-schema"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46548290344bae93e71890c272bb13ff7169a0ecbcd570a540a2438dd1880661"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
  "capnp",
  "distill-core",
@@ -845,8 +904,7 @@ dependencies = [
 [[package]]
 name = "distill-serde-importable-derive"
 version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2c8375744f44af7b9e30fa4afcf2cf3322bf2807c14e2b0b5724628035d66ac"
+source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
 dependencies = [
  "quote",
  "syn",
@@ -1149,8 +1207,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcd999463524c52659517fe2cea98493cfe485d10565e7b0fb07dbba7ad2753"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
  "libc",
  "wasi",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -1602,23 +1662,10 @@ dependencies = [
  "kernel32-sys",
  "libc",
  "log",
- "miow 0.2.2",
+ "miow",
  "net2",
  "slab",
  "winapi 0.2.8",
-]
-
-[[package]]
-name = "mio"
-version = "0.7.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8067b404fe97c70829f082dec8bcf4f71225d7eaea1d8645349cb76fa06205cc"
-dependencies = [
- "libc",
- "log",
- "miow 0.3.7",
- "ntapi",
- "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1629,7 +1676,7 @@ checksum = "52403fe290012ce777c4626790c8951324a2b9e3316b3143779c72b029742f19"
 dependencies = [
  "lazycell",
  "log",
- "mio 0.6.23",
+ "mio",
  "slab",
 ]
 
@@ -1643,15 +1690,6 @@ dependencies = [
  "net2",
  "winapi 0.2.8",
  "ws2_32-sys",
-]
-
-[[package]]
-name = "miow"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9f1c5b025cda876f66ef43a113f91ebc9f4ccef34843000e0adf6ebbab84e21"
-dependencies = [
- "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1769,18 +1807,9 @@ dependencies = [
  "fsevent-sys",
  "inotify",
  "libc",
- "mio 0.6.23",
+ "mio",
  "mio-extras",
  "walkdir",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "ntapi"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f6bb902e437b6d86e03cce10a7e2af662292c5dfef23b65899ea3ac9354ad44"
-dependencies = [
  "winapi 0.3.9",
 ]
 
@@ -2009,6 +2038,19 @@ dependencies = [
  "crc32fast",
  "deflate",
  "miniz_oxide 0.3.7",
+]
+
+[[package]]
+name = "polling"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "685404d509889fade3e86fe3a5803bca2ec09b0c0778d5ada6ec8bf7a8de5259"
+dependencies = [
+ "cfg-if 1.0.0",
+ "libc",
+ "log",
+ "wepoll-ffi",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2554,6 +2596,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "socket2"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5dc90fe6c7be1a323296982db1836d1ea9e47b6839496dde9a541bc496df3516"
+dependencies = [
+ "libc",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "spirv-std"
 version = "0.4.0-alpha.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2703,49 +2755,6 @@ checksum = "ca8a50ef2360fbd1eeb0ecd46795a87a19024eb4b53c5dc916ca1fd95fe62438"
 dependencies = [
  "libc",
  "winapi 0.3.9",
-]
-
-[[package]]
-name = "tokio"
-version = "1.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70e992e41e0d2fb9f755b37446f20900f64446ef54874f40a60c78f021ac6144"
-dependencies = [
- "autocfg",
- "bytes",
- "libc",
- "memchr",
- "mio 0.7.14",
- "num_cpus",
- "pin-project-lite",
- "tokio-macros",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "1.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9efc1aba077437943f7515666aa2b882dfabfbfdf89c819ea75a8d6e9eaba5e"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "tokio-util"
-version = "0.6.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e99e1983e5d376cd8eb4b66604d2e99e79f5bd988c3055891dcd8c9e2604cc0"
-dependencies = [
- "bytes",
- "futures-core",
- "futures-io",
- "futures-sink",
- "log",
- "pin-project-lite",
- "tokio",
 ]
 
 [[package]]
@@ -3056,10 +3065,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "websocket-async-io"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a03b5f9ff66bb9eebbad301428512bf7c3093ce35ad62fb87d5b39028fa4b51c"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "futures-io",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "weezl"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b77fdfd5a253be4ab714e4ffa3c49caf146b4de743e97510c0656cf90f1e8e"
+
+[[package]]
+name = "wepoll-ffi"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d743fdedc5c64377b5fc2bc036b01c7fd642205a0d96356034ae3404d49eb7fb"
+dependencies = [
+ "cc",
+]
 
 [[package]]
 name = "winapi"
@@ -3120,7 +3152,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "mio 0.6.23",
+ "mio",
  "mio-extras",
  "ndk",
  "ndk-glue",

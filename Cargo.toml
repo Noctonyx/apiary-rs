@@ -13,3 +13,5 @@ opt-level = 2
 opt-level = 2
 
 #[patch.crates-io]
+[patch.crates-io]
+distill = { git = "https://github.com/aclysma/distill.git", rev = "4da6b5bacff88f86ec9f80736d4113cf057512e5" }
