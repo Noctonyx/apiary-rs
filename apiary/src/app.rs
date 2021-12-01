@@ -398,7 +398,7 @@ impl ApiaryApp {
                 egui::Window::new("Asset List")
                     .open(&mut debug_ui_state.show_asset_list)
                     .show(&ctx, |ui| {
-                        egui::ScrollArea::auto_sized().show(ui, |ui| {
+                        egui::ScrollArea::vertical().show(ui, |ui| {
                             let loader = asset_manager.loader();
                             let mut asset_info = loader
                                 .get_active_loads()
