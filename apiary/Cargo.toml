@@ -29,6 +29,7 @@ glam = { version = "0.13.1", features = [ "serde" ] }
 puffin_egui = { version = "0.10", optional = true }
 rand = "0.8"
 distill = { version = "=0.0.3", features = ["serde_importers"] }
+clui = {path="../clui"}
 #image = "0.23.12"
 #serde = "1"
 ##serde_bytes = "0.11"

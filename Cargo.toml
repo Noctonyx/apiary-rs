@@ -3,7 +3,10 @@
 members = [
     "apiary-main",
     "apiary",
-    "apiary-assets"
+    "apiary-assets",
+    "clui-base",
+    "clui-layout",
+    "clui-documents",
 ]
 
 [profile.dev.package."*"]

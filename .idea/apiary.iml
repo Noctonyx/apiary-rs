@@ -6,6 +6,10 @@
       <sourceFolder url="file://$MODULE_DIR$/apiary-main/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/apiary/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/apiary-assets/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/clui-base/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/clui-documents/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/clui-layout/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/clui/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

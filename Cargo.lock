@@ -92,6 +92,7 @@ name = "apiary"
 version = "0.1.0"
 dependencies = [
  "bevy_tasks",
+ "clui",
  "distill",
  "egui",
  "glam",
@@ -480,6 +481,22 @@ dependencies = [
  "unicode-width",
  "vec_map",
 ]
+
+[[package]]
+name = "clui"
+version = "0.1.0"
+
+[[package]]
+name = "clui-base"
+version = "0.1.0"
+
+[[package]]
+name = "clui-documents"
+version = "0.1.0"
+
+[[package]]
+name = "clui-layout"
+version = "0.1.0"
 
 [[package]]
 name = "cocoa"
@@ -2241,6 +2258,7 @@ name = "rafx-framework"
 version = "0.0.14"
 dependencies = [
  "arrayvec",
+ "bincode",
  "bitflags",
  "crossbeam-channel",
  "downcast-rs",

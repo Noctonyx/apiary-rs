@@ -16,11 +16,13 @@ use rafx::renderer::{AssetSource, Renderer, RendererConfigResource, ViewportsRes
 use rafx::visibility::VisibilityRegion;
 use rafx_plugins::assets::font::FontAsset;
 use rafx_plugins::features::egui::{EguiContextResource, WinitEguiManager};
-use rafx_plugins::features::mesh::MeshRenderOptions;
+use rafx_plugins::features::mesh_basic::MeshBasicRenderOptions;
 use rafx_plugins::features::skybox::SkyboxResource;
 use rafx_plugins::features::text::TextResource;
 use rafx_plugins::features::tile_layer::TileLayerResource;
-use rafx_plugins::pipelines::basic::{BasicPipelineRenderOptions, TonemapperType};
+use rafx_plugins::pipelines::basic::{
+    BasicPipelineRenderOptions, BasicPipelineTonemapDebugData, BasicPipelineTonemapperType,
+};
 use std::net::{AddrParseError, SocketAddr};
 use std::path::PathBuf;
 use std::time::Instant;
@@ -113,7 +115,7 @@ pub struct RenderOptions {
     pub show_feature_toggles: bool,
     pub show_shadows: bool,
     pub blur_pass_count: usize,
-    pub tonemapper_type: TonemapperType,
+    pub tonemapper_type: BasicPipelineTonemapperType,
     pub enable_visibility_update: bool,
 }
 
@@ -133,7 +135,7 @@ impl RenderOptions {
             show_shadows: true,
             show_feature_toggles: false,
             blur_pass_count: 0,
-            tonemapper_type: TonemapperType::None,
+            tonemapper_type: BasicPipelineTonemapperType::None,
             enable_visibility_update: true,
         }
     }
@@ -153,7 +155,7 @@ impl RenderOptions {
             show_shadows: true,
             show_feature_toggles: true,
             blur_pass_count: 5,
-            tonemapper_type: TonemapperType::LogDerivative,
+            tonemapper_type: BasicPipelineTonemapperType::AutoExposureOld,
             enable_visibility_update: true,
         }
     }
@@ -167,8 +169,8 @@ impl RenderOptions {
 
         if self.enable_hdr {
             ui.indent("HDR options", |ui| {
-                let tonemapper_names: Vec<_> = (0..(TonemapperType::MAX as i32))
-                    .map(|t| TonemapperType::from(t).display_name())
+                let tonemapper_names: Vec<_> = (0..(BasicPipelineTonemapperType::MAX as i32))
+                    .map(|t| BasicPipelineTonemapperType::from(t).display_name())
                     .collect();
 
                 egui::ComboBox::from_label("tonemapper_type")
@@ -177,7 +179,7 @@ impl RenderOptions {
                         for (i, name) in tonemapper_names.iter().enumerate() {
                             ui.selectable_value(
                                 &mut self.tonemapper_type,
-                                TonemapperType::from(i as i32),
+                                BasicPipelineTonemapperType::from(i as i32),
                                 name,
                             );
                         }
@@ -230,6 +232,7 @@ impl RenderOptions {
 pub struct DebugUiState {
     show_render_options: bool,
     show_asset_list: bool,
+    show_tonemap_debug: bool,
 
     #[cfg(feature = "profile-with-puffin")]
     show_profiler: bool,
@@ -353,6 +356,10 @@ impl ApiaryApp {
             let time_state = self.resources.get::<TimeState>().unwrap();
             let mut debug_ui_state = self.resources.get_mut::<DebugUiState>().unwrap();
             let mut render_options = self.resources.get_mut::<RenderOptions>().unwrap();
+            let tonemap_debug_data = self
+                .resources
+                .get::<BasicPipelineTonemapDebugData>()
+                .unwrap();
             let asset_manager = self.resources.get::<AssetResource>().unwrap();
 
             egui::TopBottomPanel::top("top_panel").show(&ctx, |ui| {
@@ -361,6 +368,7 @@ impl ApiaryApp {
                         ui.checkbox(&mut debug_ui_state.show_render_options, "Render Options");
 
                         ui.checkbox(&mut debug_ui_state.show_asset_list, "Asset List");
+                        ui.checkbox(&mut debug_ui_state.show_tonemap_debug, "Tonemap Debug");
 
                         #[cfg(feature = "profile-with-puffin")]
                         if ui
@@ -385,6 +393,49 @@ impl ApiaryApp {
                     });
                 })
             });
+
+            if debug_ui_state.show_tonemap_debug {
+                egui::Window::new("Tonemap Debug")
+                    .open(&mut debug_ui_state.show_tonemap_debug)
+                    .show(&ctx, |ui| {
+                        let data = tonemap_debug_data.inner.lock().unwrap();
+
+                        ui.add(egui::Label::new(format!(
+                            "histogram_sample_count: {}",
+                            data.histogram_sample_count
+                        )));
+                        ui.add(egui::Label::new(format!(
+                            "histogram_max_value: {}",
+                            data.histogram_max_value
+                        )));
+
+                        use egui::plot::{Line, Plot, VLine, Value, Values};
+                        let line_values: Vec<_> = data
+                            .histogram
+                            .iter()
+                            //.skip(1) // don't include index 0
+                            .enumerate()
+                            .map(|(i, value)| Value::new(i as f64, *value as f64))
+                            .collect();
+                        let line =
+                            Line::new(Values::from_values_iter(line_values.into_iter())).fill(0.0);
+                        let average_line = VLine::new(data.result_average_bin);
+                        let low_line = VLine::new(data.result_low_bin);
+                        let high_line = VLine::new(data.result_high_bin);
+                        Some(
+                            ui.add(
+                                Plot::new("my_plot")
+                                    .line(line)
+                                    .vline(average_line)
+                                    .vline(low_line)
+                                    .vline(high_line)
+                                    .include_y(0.0)
+                                    .include_y(1.0)
+                                    .show_axes([false, false]),
+                            ),
+                        )
+                    });
+            }
 
             if debug_ui_state.show_render_options {
                 egui::Window::new("Render Options")
@@ -461,7 +512,8 @@ impl ApiaryApp {
             bpro.tonemapper_type = render_options.tonemapper_type;
             bpro.enable_visibility_update = render_options.enable_visibility_update;
 
-            let mut mesh_render_options = self.resources.get_mut::<MeshRenderOptions>().unwrap();
+            let mut mesh_render_options =
+                self.resources.get_mut::<MeshBasicRenderOptions>().unwrap();
             mesh_render_options.show_surfaces = render_options.show_surfaces;
             mesh_render_options.show_shadows = render_options.show_shadows;
             mesh_render_options.enable_lighting = render_options.enable_lighting;
@@ -486,6 +538,12 @@ impl ApiaryApp {
         // Redraw
         //
         {
+            let dt = self
+                .resources
+                .get::<TimeState>()
+                .unwrap()
+                .previous_update_time();
+
             profiling::scope!("Start Next Frame Render");
             let renderer = self.resources.get::<Renderer>().unwrap();
 
@@ -510,7 +568,8 @@ impl ApiaryApp {
             add_to_extract_resources!(TimeState);
             add_to_extract_resources!(RenderOptions);
             add_to_extract_resources!(BasicPipelineRenderOptions);
-            add_to_extract_resources!(MeshRenderOptions);
+            add_to_extract_resources!(BasicPipelineTonemapDebugData);
+            add_to_extract_resources!(MeshBasicRenderOptions);
             add_to_extract_resources!(RendererConfigResource);
             add_to_extract_resources!(TileLayerResource);
             add_to_extract_resources!(SkyboxResource);
@@ -519,7 +578,7 @@ impl ApiaryApp {
                 sprite_render_object_set
             );
             add_to_extract_resources!(
-                rafx_plugins::features::mesh::MeshRenderObjectSet,
+                rafx_plugins::features::mesh_basic::MeshBasicRenderObjectSet,
                 mesh_render_object_set
             );
             add_to_extract_resources!(
@@ -541,7 +600,7 @@ impl ApiaryApp {
             extract_resources.insert(&mut self.world);
 
             renderer
-                .start_rendering_next_frame(&mut extract_resources)
+                .start_rendering_next_frame(&mut extract_resources, dt)
                 .unwrap();
         }
 
@@ -564,8 +623,9 @@ impl ApiaryApp {
         resources.insert(TimeState::new());
         resources.insert(InputResource::new());
         resources.insert(RenderOptions::default_2d());
-        resources.insert(MeshRenderOptions::default());
+        resources.insert(MeshBasicRenderOptions::default());
         resources.insert(BasicPipelineRenderOptions::default());
+        resources.insert(BasicPipelineTonemapDebugData::default());
         resources.insert(DebugUiState::default());
 
         let mut scene_manager = SceneManager::default();

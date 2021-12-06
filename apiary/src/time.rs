@@ -46,6 +46,11 @@ impl TimeState {
     pub fn total_time(&self) -> Duration {
         self.app_time_context.total_time
     }
+
+    /// duration of time passed during the previous update
+    pub fn previous_update_time(&self) -> Duration {
+        self.app_time_context.previous_update_time
+    }
 }
 
 /// Tracks time passing, this is separate from the "global" `TimeState` since it would be
@@ -85,8 +90,7 @@ impl TimeContext {
         self.previous_update_time = elapsed;
 
         // this can eventually be replaced with as_float_secs
-        let dt =
-            (elapsed.as_secs() as f32) + (elapsed.subsec_nanos() as f32) / (NANOS_PER_SEC as f32);
+        let dt = elapsed.as_secs_f32();
 
         self.previous_update_dt = dt;
 
