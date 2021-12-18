@@ -198,7 +198,7 @@ impl UiScene {
             visibility_region.register_view_frustum(),
             visibility_region.register_view_frustum(),
         ];
-        super::add_point_light(
+        super::util::add_point_light(
             resources,
             world,
             //glam::Vec3::new(-3.0, 3.0, 2.0),
@@ -217,7 +217,7 @@ impl UiScene {
         let light_from = glam::Vec3::new(-5.0, 5.0, 5.0);
         let light_to = glam::Vec3::ZERO;
         let light_direction = (light_to - light_from).normalize();
-        super::add_directional_light(
+        super::util::add_directional_light(
             resources,
             world,
             DirectionalLightComponent {
@@ -234,7 +234,7 @@ impl UiScene {
         let light_from = glam::Vec3::new(-3.0, -3.0, 5.0);
         let light_to = glam::Vec3::ZERO;
         let light_direction = (light_to - light_from).normalize();
-        super::add_spot_light(
+        super::util::add_spot_light(
             resources,
             world,
             light_from,

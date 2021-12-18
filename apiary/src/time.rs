@@ -7,8 +7,6 @@ pub struct TimeState {
     app_time_context: TimeContext,
 }
 
-const NANOS_PER_SEC: u32 = 1_000_000_000;
-
 impl TimeState {
     pub fn new() -> TimeState {
         let now = Instant::now();
@@ -29,6 +27,11 @@ impl TimeState {
 
     pub fn current_instant(&self) -> Instant {
         self.app_time_context.current_instant
+    }
+
+    /// previous update time in f32 seconds
+    pub fn previous_update_dt(&self) -> f32 {
+        self.app_time_context.previous_update_dt
     }
 
     pub fn updates_per_second(&self) -> f32 {

@@ -437,6 +437,12 @@ impl ApiaryApp {
                     });
             }
 
+            tonemap_debug_data
+                .inner
+                .lock()
+                .unwrap()
+                .enable_debug_data_collection = debug_ui_state.show_tonemap_debug;
+
             if debug_ui_state.show_render_options {
                 egui::Window::new("Render Options")
                     .open(&mut debug_ui_state.show_render_options)

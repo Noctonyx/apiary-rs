@@ -13,6 +13,9 @@ edition = "2021"
 rafx-plugins = { version = "0.0.14" , features=["legion", "egui"], path="../../rafx/rafx-plugins"}
 #distill = { version = "=0.0.3", features = ["serde_importers"] }
 rafx = { version = "0.0.14" , path="../../rafx/rafx", features=["renderer", "basis-universal", "assets"]}
+
+clui-base = {path = "../../clui/clui-base"}
+clui-layout = {path = "../../clui/clui-layout"}
 #rafx = { version = "0.0.14" , features=["renderer", "basis-universal", "assets"]}
 winit = "0.24"
 profiling = "1.0"
@@ -29,7 +32,8 @@ glam = { version = "0.13.1", features = [ "serde" ] }
 puffin_egui = { version = "0.10", optional = true }
 rand = "0.8"
 distill = { version = "=0.0.3", features = ["serde_importers"] }
-clui = {path="../clui"}
+serde = "1"
+#clui = {path="../clui"}
 #image = "0.23.12"
 #serde = "1"
 ##serde_bytes = "0.11"

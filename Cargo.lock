@@ -92,7 +92,8 @@ name = "apiary"
 version = "0.1.0"
 dependencies = [
  "bevy_tasks",
- "clui",
+ "clui-base",
+ "clui-layout",
  "distill",
  "egui",
  "glam",
@@ -104,6 +105,7 @@ dependencies = [
  "rafx",
  "rafx-plugins",
  "rand",
+ "serde",
  "stats_alloc",
  "structopt",
  "winit",
@@ -483,16 +485,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "clui"
-version = "0.1.0"
-
-[[package]]
 name = "clui-base"
 version = "0.1.0"
-
-[[package]]
-name = "clui-documents"
-version = "0.1.0"
+dependencies = [
+ "slotmap",
+]
 
 [[package]]
 name = "clui-layout"
@@ -784,7 +781,7 @@ checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 [[package]]
 name = "distill"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "distill-core",
  "distill-daemon",
@@ -795,7 +792,7 @@ dependencies = [
 [[package]]
 name = "distill-core"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "dunce",
  "futures",
@@ -811,7 +808,7 @@ dependencies = [
 [[package]]
 name = "distill-daemon"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "async-channel",
  "async-executor",
@@ -869,7 +866,7 @@ dependencies = [
 [[package]]
 name = "distill-importer"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "distill-core",
  "distill-serde-importable-derive",
@@ -885,7 +882,7 @@ dependencies = [
 [[package]]
 name = "distill-loader"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "async-executor",
  "async-net",
@@ -903,6 +900,7 @@ dependencies = [
  "log",
  "memmap",
  "pin-project-lite",
+ "profiling",
  "serde",
  "thread_local",
  "uuid",
@@ -912,7 +910,7 @@ dependencies = [
 [[package]]
 name = "distill-schema"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "capnp",
  "distill-core",
@@ -921,7 +919,7 @@ dependencies = [
 [[package]]
 name = "distill-serde-importable-derive"
 version = "0.0.3"
-source = "git+https://github.com/aclysma/distill.git?rev=4da6b5bacff88f86ec9f80736d4113cf057512e5#4da6b5bacff88f86ec9f80736d4113cf057512e5"
+source = "git+https://github.com/aclysma/distill.git?rev=9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8#9e127ca9d034e0c7dffb747f8aae3a2607b0e1e8"
 dependencies = [
  "quote",
  "syn",

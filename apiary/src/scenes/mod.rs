@@ -1,4 +1,5 @@
 mod ui_scene;
+mod util;
 
 use legion::{IntoQuery, Read, Resources, World};
 use rafx_plugins::components::{
@@ -111,42 +112,6 @@ fn add_light_debug_draw(resources: &Resources, world: &World) {
             10,
         );
     }
-}
-
-fn add_directional_light(
-    _resources: &Resources,
-    world: &mut World,
-    light_component: DirectionalLightComponent,
-) {
-    world.extend(vec![(light_component,)]);
-}
-
-fn add_spot_light(
-    _resources: &Resources,
-    world: &mut World,
-    position: glam::Vec3,
-    light_component: SpotLightComponent,
-) {
-    let position_component = TransformComponent {
-        translation: position,
-        ..Default::default()
-    };
-
-    world.extend(vec![(position_component, light_component)]);
-}
-
-fn add_point_light(
-    _resources: &Resources,
-    world: &mut World,
-    position: glam::Vec3,
-    light_component: PointLightComponent,
-) {
-    let position_component = TransformComponent {
-        translation: position,
-        ..Default::default()
-    };
-
-    world.extend(vec![(position_component, light_component)]);
 }
 
 pub fn create_scene(world: &mut World, resources: &Resources) -> Box<dyn Scene> {

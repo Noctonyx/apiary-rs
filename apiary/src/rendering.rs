@@ -112,6 +112,7 @@ pub fn rendering_init(
         window,
         window_width,
         window_height,
+        false,
     )?;
 
     resources.insert(rafx_api.device_context());
